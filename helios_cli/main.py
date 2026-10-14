@@ -9,7 +9,13 @@ import argparse
 import asyncio
 import sys
 
-from custom_components.helios_kwl_ec300._core import DEFAULT_HOST, HeliosError, Info, PartyModeError
+from custom_components.helios_kwl_ec300._core import (
+    DEFAULT_HOST,
+    DEFAULT_PASSWORD,
+    HeliosError,
+    Info,
+    PartyModeError,
+)
 from custom_components.helios_kwl_ec300._core.models import HeliosStatus
 
 
@@ -94,7 +100,7 @@ async def cmd_status(args: argparse.Namespace) -> int:
     """
     print(f"Fetching data from {args.host} …", file=sys.stderr)
 
-    async with Info(args.host) as helios:
+    async with Info(args.host, password=args.password) as helios:
         status = await helios.get_status()
 
         if args.json:
@@ -122,7 +128,7 @@ async def cmd_party_start(args: argparse.Namespace) -> int:
         file=sys.stderr,
     )
 
-    async with Info(args.host) as helios:
+    async with Info(args.host, password=args.password) as helios:
         await helios.set_party_mode(
             duration_minutes=args.duration,
             fan_stage=args.fan_stage,
@@ -143,7 +149,7 @@ async def cmd_party_stop(args: argparse.Namespace) -> int:
     """
     print(f"Deactivating party mode on {args.host} …", file=sys.stderr)
 
-    async with Info(args.host) as helios:
+    async with Info(args.host, password=args.password) as helios:
         await helios.stop_party_mode()
 
     print("✓ Party mode deactivated", file=sys.stderr)
@@ -196,6 +202,7 @@ def main() -> None:
 Examples:
   %(prog)s                                  # Show status (default)
   %(prog)s status --json                    # JSON output for scripting
+  %(prog)s --password 'secret' status       # Authenticate with a custom password
   %(prog)s party start --duration 120       # Activate party mode for 120 min
   %(prog)s party stop                       # Deactivate party mode
 
@@ -209,6 +216,12 @@ Safety:
         default=DEFAULT_HOST,
         metavar="HOSTNAME",
         help=f"Hostname or IP of the Helios unit (default: {DEFAULT_HOST})",
+    )
+    parser.add_argument(
+        "--password",
+        default=DEFAULT_PASSWORD,
+        metavar="PASSWORD",
+        help=f"Device web-interface password (default: {DEFAULT_PASSWORD})",
     )
     parser.add_argument(
         "--version",

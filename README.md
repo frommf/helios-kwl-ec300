@@ -105,6 +105,7 @@ The component is self-contained. Provided entities:
 just run
 just run status
 just run --host 192.168.1.100 status
+just run --host 192.168.1.100 --password 'my-secret' status
 
 # JSON output
 just run status --json
