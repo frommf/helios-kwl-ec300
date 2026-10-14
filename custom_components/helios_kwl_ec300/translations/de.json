@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Helios KWL einrichten",
+        "description": "Verbinden Sie Home Assistant mit Ihrem Helios-Lueftungsgeraet.",
+        "data": {
+          "host": "Host",
+          "password": "Passwort",
+          "scan_interval": "Abfrageintervall (Sekunden)",
+          "party_duration_minutes": "Standarddauer Partybetrieb (Minuten)",
+          "party_fan_stage": "Standard-Luefterstufe Partybetrieb"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zur Helios-Anlage fehlgeschlagen.",
+      "invalid_auth": "Authentifizierung fehlgeschlagen.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "abort": {
+      "already_configured": "Diese Helios-Anlage ist bereits eingerichtet."
+    }
+  }
+}

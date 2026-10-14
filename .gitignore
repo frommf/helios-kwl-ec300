@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Linting / formatting
+.ruff_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.aider*
+
+# Vendor reference material — local-only, never commit, never modify.
+# Contains manufacturer documentation and the device web interface dump.
+# These files must NEVER appear in the repository. See AGENTS.md (Safety Mandates).
+/vendor/
+# Legacy root locations, guarded so the material can never be re-committed there:
+/helios_web_dump/
+/KWL_Modbus_easyControls_82269-001_0917.pdf

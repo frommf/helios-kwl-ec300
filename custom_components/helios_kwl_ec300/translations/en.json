@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Helios KWL",
+        "description": "Connect Home Assistant to your Helios ventilation unit.",
+        "data": {
+          "host": "Host",
+          "password": "Password",
+          "scan_interval": "Polling interval (seconds)",
+          "party_duration_minutes": "Default party duration (minutes)",
+          "party_fan_stage": "Default party fan stage"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Helios unit.",
+      "invalid_auth": "Authentication failed.",
+      "unknown": "Unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This Helios unit is already configured."
+    }
+  }
+}
