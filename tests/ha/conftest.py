@@ -461,7 +461,7 @@ def runtime_data(
     sample_snapshot: HeliosSnapshot,
 ) -> Any:
     """Return coordinator runtime data shared by entity tests."""
-    from custom_components.helios_kwl_ec300.coordinator import (  # pyright: ignore[reportImplicitRelativeImport]
+    from custom_components.helios_kwl_ec300.coordinator import (
         HeliosDataUpdateCoordinator,
         HeliosRuntimeData,
         HeliosSettings,

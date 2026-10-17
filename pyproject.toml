@@ -25,7 +25,6 @@ dev = [
     "pytest-cov>=4.1",
     "ruff>=0.3",
     "mypy>=1.8",
-    "homeassistant>=2024.3.3",
 ]
 
 # ── Shared Tool Configuration ────────────────────────────────────────
