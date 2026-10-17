@@ -1,4 +1,4 @@
 schema: spec-driven
 created: 2026-10-17
-goal: "Ship release v0.3.0 via GitHub: merge open-Spec into main, flip repo public, tag v0.3.0, create GitHub Release, update TODO.md"
+goal: "Ship release v0.3.0 via GitHub: merge open-Spec into main, flip repo public, tag v0.3.0, create GitHub Release, optional HACS store PR, retire TODO.md"
 skip_specs: true

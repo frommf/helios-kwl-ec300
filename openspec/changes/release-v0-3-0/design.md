@@ -13,8 +13,9 @@
   (`name`, `homeassistant: 2024.3.0`).
 - Validate-Workflow (`validate.yml`) läuft identisch zu `just check` plus HACS und
   hassfest; er triggert auf Push nach `main`.
-- `TODO.md` #1–#2 dokumentieren Repo-public und Tag/Release bereits präzise — es fehlt
-  nur der Merge-Schritt (Phase 0), der durch die OpenSpec-Arbeit nötig wurde.
+- `TODO.md` ist das Vor-OpenSpec-Notizbuch (#1 public, #2 Tag/Release, #3 Store-PR,
+  #4 Brand-Art). #1–#2 deckt dieser Change ab, #4 ist durch `pre-release-cleanup`
+  erledigt — nach diesem Change existiert die Datei nicht mehr.
 
 ## Goals / Non-Goals
 
@@ -23,15 +24,16 @@
 - `main` enthält alle 6 `open-Spec`-Commits, CI grün — bevor das Repo öffentlich wird
 - HACS-Validation 9/9 (raw-URLs erreichbar)
 - Tag `v0.3.0` + GitHub Release existieren; HACS zeigt die Version an
-- `TODO.md` spiegelt den neuen Zustand (Checkboxen, Phase-0-Nachtrag)
+- Store-PR als optionaler Task gerettet (bewusst überspringbar)
+- `TODO.md` zurückgezogen — `openspec/` ist ab jetzt die einzige Todo-Quelle; der
+  Brand-Quellen-Hinweis lebt weiter in AGENTS.md
 
 **Non-Goals:**
 
 - Kein Verhaltenscode, keine Versionsbumps (alles ist schon 0.3.0)
-- Kein HACS-Store-PR (`TODO.md` #3 — bleibt manuell, kann nach Phase 1–2 jederzeit
-  folgen)
-- Kein Austausch der `brand/`-Grafiken (`TODO.md` #4)
-- Keine Änderung an Workflow-Dateien (`.github/`)
+- Kein PR an `home-assistant/brands` (die Art-Quelle bleibt im Repo; Verweis in
+  AGENTS.md)
+- Keine Änderung an Workflow-Dateien (`.github/`) oder am OpenSpec-Setup
 
 ## Decisions
 
@@ -56,19 +58,28 @@ Repo-public und HACS-Validation grün sind — sonst zeigt HACS zwar ein Release
 die Validierung scheitert weiter und Nutzer könnten eine gebrochene First-Experience
 sehen.
 
-### Decision 4: `TODO.md` ist Teil des Diffs, das Rest ist Prozedur
+### Decision 4: TODO.md zurückziehen statt aktualisieren
 
-Der einzige Repo-Content-Diff dieses Changes ist `TODO.md` (Checkboxen #1/#2, Phase-0-
-Nachtrag). Alle anderen Schritte sind Git/GitHub-Zustandsänderungen, die in den
-Tasks als explizite Kommandos mit Verify-Schritten stehen — kein Skript im Repo, das
-später veralten würde (prozedurales Wissen gehört in die archivierte Change-Historie,
-nicht in wartbare Dateien).
+`TODO.md` war das manuelle Notizbuch vor OpenSpec. Eine Datei mit angehakten
+Checkboxen als Zustands-Doppelbuchung zu pflegen (Changes *und* TODO) erzeugt genau
+das Sediment, das OpenSpec vermeidet. Der Change löscht die Datei vollständig und
+rettet den einzigen ungedeckten Rest: #3 (Store-PR) wird optionaler Phase-3-Task; der
+Brand-Quellen-Hinweis wandert als eine Zeile in AGENTS.md (Layout). Danach ist
+`openspec/` die einzige Todo-Quelle.
 
-### Decision 5: Sicherheits-Audit als trivialer Verify
+### Decision 5: Store-PR optional, nicht verpflichtend
+
+Der `hacs/default`-Eintrag ist ein Findbarkeits-Upgrade, kein Funktions-Requirement:
+ab Phase 1 funktioniert die Custom-Repository-Installation vollständig. Deshalb steht
+der Task explizit als überspringbar — er ist der einzige Rest der alten Todo-Liste,
+weil er denselben grünen Checks wie Phase 1–2 genügt und ohne Risiko danach folgen
+kann.
+
+### Decision 6: Sicherheits-Audit als trivialer Verify
 
 Der Safety-Criterion aus AGENTS.md (grep nach `v00xxx=`-POST-Bodies im Diff) wird als
-Abschluss-Verify geführt. Der Diff besteht erwartungsgemäß nur aus `TODO.md` — der
-grep muss leer sein.
+Abschluss-Verify geführt. Der Diff besteht erwartungsgemäß nur aus der `TODO.md`-
+Löschung und der AGENTS.md-Zeile — der grep muss leer sein.
 
 ## Open Questions
 

@@ -17,8 +17,10 @@ Shipping blockiert aber an drei Stellen:
    GitHub-Release-Tag; ohne Release zeigt es einen nackten Commit-Hash und bietet kein
    Upgrade an.
 
-Die Schritte sind in `TODO.md` #1–#2 vorbereitet; dieser Change plant und vollzieht sie
-in korrekter Reihenfolge mit Verifikation.
+`TODO.md` ist das Vor-OpenSpec-Notizbuch und deckt dieselben Punkte ab (#1–#2), plus
+Store-PR (#3) und Brand-Art (#4, erledigt `pre-release-cleanup`). Mit diesem Change
+wird `TODO.md` zurückgezogen: die Ops vollzieht der Change selbst, den Store-PR rettet
+er als optionalen Task, und `openspec/` ist ab jetzt die einzige Todo-Quelle.
 
 ## What Changes
 
@@ -30,9 +32,13 @@ in korrekter Reihenfolge mit Verifikation.
 - **Phase 2 (TODO #2):** Tag `v0.3.0` setzen und pushen, GitHub Release mit
   `--generate-notes` erstellen; Version-Konsistenz (Tag = `manifest.json` `version`
   = 0.3.0) ist bereits verifiziert
-- **`TODO.md`:** Checkboxen #1/#2 abhaken, Merge-Schritt (Phase 0) als erledigt
-  nachtragen
-- Aufräumen: `open-Spec`-Branch nach erfolgreichem Merge löschen
+- **Phase 3 (optional, übernimmt TODO #3):** PR an `hacs/default` (Kategorie
+  Integration), damit die Integration ohne Custom-Repository-URL auffindbar ist —
+  bewusst überspringbar
+- **Phase 4 — TODO.md-Rückzug:** `TODO.md` vollständig löschen; den Brand-Quellen-
+  Hinweis (`brand/`-Ordner ist die Quelle für einen späteren `home-assistant/brands`-
+  PR) als eine Zeile nach AGENTS.md migrieren; `open-Spec`-Branch nach erfolgreichem
+  Merge löschen
 
 ## Capabilities
 
@@ -51,11 +57,11 @@ sich ändern, und es werden keine erfunden.
 ## Impact
 
 - **Git/GitHub-Zustand:** `main` enthält die 6 Commits von `open-Spec`; Repo ist
-  öffentlich; Tag `v0.3.0` + Release existieren
-- **Kein Produktivcode verändert** — der einzige Repo-Content-Diff ist `TODO.md`
-- **Sicherheits-Boundary unangetastet:** keine `v00xxx=`-POST-Bodies im Diff (Diff
-  besteht nur aus `TODO.md`-Checkboxen)
-- **Nicht Teil dieses Changes** (manuell, siehe `TODO.md` #3–#4): HACS-Store-PR
-  (`hacs/default`), Austausch der `brand/`-Grafiken
+  öffentlich; Tag `v0.3.0` + Release existieren; Store-PR optional gestellt
+- **Repo-Content-Diff:** `TODO.md` gelöscht, `AGENTS.md` um eine Brand-Quellen-Zeile
+  ergänzt — sonst kein Produktivcode verändert
+- **Sicherheits-Boundary unangetastet:** keine `v00xxx=`-POST-Bodies im Diff
+- **Nicht Teil dieses Changes:** PR an `home-assistant/brands` (der lokale `brand/`-
+  Ordner bleibt als Quelle im Repo; der Verweis lebt künftig in AGENTS.md)
 - Die Sichtbarkeits-Änderung ist der einzige Schritt mit echten Konsequenzen (Code wird
   öffentlich sichtbar) — im Apply wird sie erst nach CI-Grün auf `main` vollzogen
