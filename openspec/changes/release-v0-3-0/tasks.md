@@ -2,7 +2,7 @@
 
 ## 1. Phase 0 — Branch-Merge auf `main`
 
-- [ ] 1.1 `git checkout main && git merge --ff-only open-Spec` — verify: Merge ist
+- [x] 1.1 `git checkout main && git merge --ff-only open-Spec` — verify: Merge ist
       Fast-Forward und `git rev-parse main` == `git rev-parse open-Spec`; Merge
       bricht bewusst ab, falls es keine Fast-Forward-Möglichkeit gibt
 - [ ] 1.2 `git push origin main` — verify: `git status` zeigt `up to date` mit
