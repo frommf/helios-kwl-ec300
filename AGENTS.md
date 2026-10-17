@@ -26,6 +26,7 @@ Everything else is read-only:
 - `helios_cli/main.py` — CLI, installed as `helios` via `[project.scripts]`.
 - `tests/lib` (library unit tests) and `tests/ha` (HA tests). HA tests stub `homeassistant`/`voluptuous` via `tests/ha/conftest.py` — do **not** add a real HA dependency for routine work.
 - `vendor/` — git-ignored manufacturer docs + web UI dump. NEVER modify, commit, or regenerate it; it may be missing on a fresh clone.
+- `custom_components/helios_kwl_ec300/brand/` — source brand art for a future `home-assistant/brands` PR; nothing reads it at runtime.
 - `SPECS.md` — authoritative protocol and variable reference.
 
 ## Device Protocol (the reason this uses raw sockets)
