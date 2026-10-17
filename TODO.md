@@ -27,4 +27,4 @@ A store listing makes the integration findable without a custom-repository URL. 
 ## 4. Polish (optional)
 
 - [ ] Swap the generated `brand/icon.png` and `brand/logo.png` for real brand art
-- [ ] Delete the unused `icon.svg` in the integration directory — the `brand/` folder is the icon source
+- [x] Delete the unused `icon.svg` in the integration directory — the `brand/` folder is the icon source

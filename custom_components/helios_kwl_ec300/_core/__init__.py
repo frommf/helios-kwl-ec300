@@ -5,7 +5,7 @@ for Helios KWL ventilation systems.
 
 Example (reading status):
     import asyncio
-    from helios_kwl_ec300 import Info
+    from custom_components.helios_kwl_ec300._core import Info
 
     async def main():
         async with Info("helios.fritz.box") as helios:

@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-17
+goal: Fix stale import example in _core docstring and remove unused icon.svg
+skip_specs: true
