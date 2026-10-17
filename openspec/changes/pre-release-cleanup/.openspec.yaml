@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-17
+goal: "Remove unused release cruft before shipping: homeassistant dev dep, pyrightconfig.json, empty typings/; check off TODO #4"
+skip_specs: true
