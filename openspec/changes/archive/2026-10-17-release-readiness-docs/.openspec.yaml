@@ -1,0 +1,5 @@
+schema: spec-driven
+created: 2026-10-17
+goal: "Make the project release-ready: fix README entity claims and Quick Start,
+  apply writing-for-agents hygiene to AGENTS.md"
+skip_specs: true

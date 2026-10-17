@@ -18,7 +18,7 @@ Read-oriented monitoring tool for **Helios KWL EC 300W R** ventilation units run
 - Operation mode status — automatic, manual, party, quiet, holiday
 - Safe party mode control — explicitly limited to start/stop
 - Async/await with full type annotations and Pydantic models
-- Home Assistant custom integration with coordinator, sensors, binary sensors, fan, switch, number, and button entities
+- Home Assistant custom integration with coordinator, sensor, fan, number, and select entities
 
 ## Compatibility
 
@@ -30,7 +30,7 @@ Read-oriented monitoring tool for **Helios KWL EC 300W R** ventilation units run
 
 ```bash
 git clone https://github.com/frommf/helios-kwl-ec300.git
-cd helios-cli
+cd helios-kwl-ec300
 uv sync
 
 just run               # status from default host (helios.fritz.box)
@@ -92,11 +92,9 @@ just deploy-ha   # copies to /Volumes/config/custom_components/helios_kwl_ec300
 
 The component is self-contained. Provided entities:
 - **Sensors** — all temperatures, fan stage/percent/RPM, operation mode, party state
-- **Binary sensors** — party active, quiet mode, holiday mode, manual mode
-- **Fan** — read-only fan display for dashboard percentage
-- **Switch** — party mode on/off
-- **Buttons** — party mode start/stop actions
-- **Number** — configurable party duration and fan stage
+- **Fan** — current speed as percentage for dashboards; turning it on/off starts/stops party mode
+- **Number** — default party duration (minutes)
+- **Select** — default party fan stage (1–4)
 
 ## CLI Usage
 

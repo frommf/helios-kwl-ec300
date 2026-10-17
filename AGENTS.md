@@ -17,15 +17,14 @@ Everything else is read-only:
 - Never use POST/PUT/PATCH/DELETE that changes state beyond the two above. Status polling POSTs only data-retrieval bodies (`xml=/data/werte8.xml`) with no `v00xxx=` pairs.
 - Never touch `/ruhe.htm`, `/urlaub.htm`, `/syst.htm`, or any other state-changing endpoint.
 - Never set fan speeds/stages (outside party mode), quiet/holiday mode, temperature thresholds, schedules, or device config.
-- The HA fan entity is display-only — no writable fan methods.
-- After writing code, audit it so none of the above can be triggered.
+- The HA fan entity writes only party mode start/stop — never fan stage/speed.
+- After writing code, audit the diff: grep for `v00xxx=` POST bodies — every hit must be one of the three allowed writes above.
 
 ## Layout
 
 - `custom_components/helios_kwl_ec300/` — HA integration; deployed as the whole directory. `_core/` inside is the device library (async, Pydantic, pydantic-only runtime dep); import it from Python/HA as `from custom_components.helios_kwl_ec300._core import ...`.
 - `helios_cli/main.py` — CLI, installed as `helios` via `[project.scripts]`.
 - `tests/lib` (library unit tests) and `tests/ha` (HA tests). HA tests stub `homeassistant`/`voluptuous` via `tests/ha/conftest.py` — do **not** add a real HA dependency for routine work.
-- `helios_status.py` — deprecated standalone script, reference only.
 - `vendor/` — git-ignored manufacturer docs + web UI dump. NEVER modify, commit, or regenerate it; it may be missing on a fresh clone.
 - `SPECS.md` — authoritative protocol and variable reference.
 
@@ -56,7 +55,7 @@ Iterate with the focused recipes: `just test-ha` while touching the integration,
 ## HA / Release Constraints
 
 - `manifest.json` `version` must always match the current git tag (currently `0.3.0`); `hacs.json` and `manifest.json` must stay valid (HACS/hassfest enforce this in CI, domain must equal directory name).
-- The HA fan entity must remain read-only and percentage-based for dashboard visibility.
+- The HA fan entity shows percentage for dashboard visibility; its only writes are party mode start/stop — no methods that set stages or percentages on the device.
 
 ## Key Variable IDs (used by monitors and parsers)
 
@@ -69,12 +68,10 @@ Use the verified German labels from `vendor/helios_web_dump/data/lab8_de.xml` wh
 ## Reference
 
 - `SPECS.md` — IDs, endpoints, allowed/forbidden operations
-- `vendor/helios_web_dump/` — device web UI snapshot and XML schema (local-only, read-only)
+- `vendor/helios_web_dump/` — device web UI snapshot and XML schema
 - `README.md` — user-facing docs and usage
 
 ## Pitfalls
 
-- Never pour `requests` in, never switch to HTTP/1.1, never drop the 403 auth retry.
-- Never commit, modify, or re-create anything under `vendor/`.
 - Keep the library dependency footprint minimal (pydantic only).
-- Run `just check` before finishing — it mirrors CI.
+- Run `just check` before finishing.
