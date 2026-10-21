@@ -27,7 +27,8 @@ async def test_async_setup_entry_stores_runtime_data(
             return None
 
     monkeypatch.setattr(
-        "custom_components.helios_kwl_ec300.HeliosDataUpdateCoordinator", FakeCoordinator
+        "custom_components.helios_kwl_ec300.coordinator.HeliosDataUpdateCoordinator",
+        FakeCoordinator,
     )
 
     result = await async_setup_entry(hass, config_entry)

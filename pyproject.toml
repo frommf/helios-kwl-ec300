@@ -41,7 +41,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["ANN"]
-"tests/ha/conftest.py" = ["A002", "N818", "UP042"]
+"tests/fake_ha.py" = ["A002", "N818", "UP042"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/lib", "tests/ha"]

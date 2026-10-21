@@ -1,22 +1,32 @@
-"""Home Assistant setup for the Helios KWL EC 300 integration."""
+"""Home Assistant setup for the Helios KWL EC 300 integration.
+
+Home Assistant imports are deferred into the setup functions so that the
+device library (``._core``) can be imported standalone — e.g. by the CLI —
+without Home Assistant installed.
+"""
 
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_PASSWORD
-from homeassistant.core import HomeAssistant
+from typing import TYPE_CHECKING
 
 from ._core import Info
-from .const import DEFAULT_TIMEOUT_SECONDS, DOMAIN, PLATFORMS
-from .coordinator import (
-    HeliosDataUpdateCoordinator,
-    HeliosRuntimeData,
-    settings_from_entry,
-)
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Helios from a config entry."""
+    from homeassistant.const import CONF_HOST, CONF_PASSWORD
+
+    from .const import DEFAULT_TIMEOUT_SECONDS, DOMAIN, PLATFORMS
+    from .coordinator import (
+        HeliosDataUpdateCoordinator,
+        HeliosRuntimeData,
+        settings_from_entry,
+    )
+
     settings = settings_from_entry(entry)
     api = Info(
         host=entry.data[CONF_HOST],
@@ -48,6 +58,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a Helios config entry."""
+    from .const import DOMAIN, PLATFORMS
+
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)

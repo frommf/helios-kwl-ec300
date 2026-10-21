@@ -78,16 +78,10 @@ New releases show up as updates in HACS automatically.
 
 ### Manual installation (alternative)
 
-Deploy by copying the entire component directory to your HA instance — no build step:
+Install the integration via HACS from this GitHub repository, or copy the entire component directory to your HA instance manually:
 
 ```bash
 cp -r custom_components/helios_kwl_ec300 /path/to/ha/custom_components/
-```
-
-Or, with the HA config mounted via SMB at `/Volumes/config`:
-
-```bash
-just deploy-ha   # copies to /Volumes/config/custom_components/helios_kwl_ec300
 ```
 
 The component is self-contained. Provided entities:
@@ -201,7 +195,6 @@ just check   # lint + format check + typecheck + tests
 | `just typecheck` | Type-check with mypy |
 | `just check` | All checks (lint + fmt + types + tests) |
 | `just fix` | Auto-fix lint + format |
-| `just deploy-ha` | Deploy to HA via SMB mount |
 | `just run *args` | Run the CLI |
 | `just clean` | Remove caches |
 

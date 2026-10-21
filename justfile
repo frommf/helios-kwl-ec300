@@ -57,20 +57,6 @@ fix:
     uv run ruff check --fix custom_components/ helios_cli/ tests/
     uv run ruff format custom_components/ helios_cli/ tests/
 
-# ── Deploy ───────────────────────────────────────────────────────────
-
-ha_component_src := "custom_components/helios_kwl_ec300"
-ha_dir           := "/Volumes/config/custom_components/helios_kwl_ec300"
-
-# Deploy integration directly to HA via SMB mount at /Volumes/config
-deploy-ha:
-    @test -d /Volumes/config || (echo "ERROR: /Volumes/config is not mounted" && exit 1)
-    rm -rf {{ha_dir}}
-    mkdir -p /Volumes/config/custom_components
-    cp -r {{ha_component_src}} {{ha_dir}}
-    find {{ha_dir}} -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
-    @echo "Deployed → {{ha_dir}}"
-
 # ── Run ──────────────────────────────────────────────────────────────
 
 # Run the helios CLI

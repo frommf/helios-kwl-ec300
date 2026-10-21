@@ -24,7 +24,7 @@ Everything else is read-only:
 
 - `custom_components/helios_kwl_ec300/` — HA integration; deployed as the whole directory. `_core/` inside is the device library (async, Pydantic, pydantic-only runtime dep); import it from Python/HA as `from custom_components.helios_kwl_ec300._core import ...`.
 - `helios_cli/main.py` — CLI, installed as `helios` via `[project.scripts]`.
-- `tests/lib` (library unit tests) and `tests/ha` (HA tests). HA tests stub `homeassistant`/`voluptuous` via `tests/ha/conftest.py` — do **not** add a real HA dependency for routine work.
+- `tests/lib` (library unit tests) and `tests/ha` (HA tests). The root `tests/conftest.py` installs fake `homeassistant`/`voluptuous` modules (`tests/fake_ha.py`) for all tests — do **not** add a real HA dependency for routine work.
 - `vendor/` — git-ignored manufacturer docs + web UI dump. NEVER modify, commit, or regenerate it; it may be missing on a fresh clone.
 - `custom_components/helios_kwl_ec300/brand/` — source brand art for a future `home-assistant/brands` PR; nothing reads it at runtime.
 - `SPECS.md` — authoritative protocol and variable reference.
@@ -49,7 +49,6 @@ Everything else is read-only:
 | `just typecheck` | mypy on `_core` + `helios_cli` |
 | `just check` | lint + fmt-check + typecheck + test |
 | `just run <args>` | `uv run helios <args>` (e.g. `just run status --json`) |
-| `just deploy-ha` | `cp -r` the component to `/Volumes/config` SMB mount (fails if not mounted) |
 
 Iterate with the focused recipes: `just test-ha` while touching the integration, `just test-lib` for `_core/` changes. Run scripts locally with `uv run python script.py` so the project packages are importable.
 
