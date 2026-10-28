@@ -116,6 +116,41 @@ class SimpleApiError(_FakeApiBase):
 
 
 @pytest.mark.asyncio
+async def test_async_set_fan_stage_refreshes_without_optimistic_state(
+    runtime_data, sample_snapshot
+) -> None:
+    """Fan-stage writes refresh once without assigning an optimistic target."""
+    original_snapshot = runtime_data.coordinator.data
+    refreshed_snapshot = sample_snapshot.model_copy(deep=True)
+    runtime_data.api.set_fan_stage = AsyncMock()
+    runtime_data.coordinator.api = runtime_data.api
+    runtime_data.coordinator.async_request_refresh = AsyncMock(return_value=refreshed_snapshot)
+
+    await runtime_data.coordinator.async_set_fan_stage(2)
+
+    runtime_data.api.set_fan_stage.assert_awaited_once_with(2)
+    runtime_data.coordinator.async_request_refresh.assert_awaited_once()
+    assert runtime_data.coordinator.data is original_snapshot
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("enabled", [True, False])
+async def test_async_set_automatic_mode_refreshes_actual_state(
+    runtime_data, sample_snapshot, enabled
+) -> None:
+    """Automatic-mode writes delegate once and then request one actual-state refresh."""
+    refreshed_snapshot = sample_snapshot.model_copy(deep=True)
+    runtime_data.api.set_automatic_mode = AsyncMock()
+    runtime_data.coordinator.api = runtime_data.api
+    runtime_data.coordinator.async_request_refresh = AsyncMock(return_value=refreshed_snapshot)
+
+    await runtime_data.coordinator.async_set_automatic_mode(enabled)
+
+    runtime_data.api.set_automatic_mode.assert_awaited_once_with(enabled)
+    runtime_data.coordinator.async_request_refresh.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_async_start_party_mode_uses_runtime_defaults(runtime_data, sample_snapshot) -> None:
     """Party mode start uses configured defaults and refreshes state."""
     runtime_data.api.set_party_mode = AsyncMock()

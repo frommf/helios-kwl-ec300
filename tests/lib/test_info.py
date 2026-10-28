@@ -25,6 +25,8 @@ def mock_client(mocker):
     mock.return_value.fetch_werte3 = AsyncMock()
     mock.return_value.set_party_mode = AsyncMock()
     mock.return_value.stop_party_mode = AsyncMock()
+    mock.return_value.set_fan_stage = AsyncMock()
+    mock.return_value.set_automatic_mode = AsyncMock()
     return mock
 
 
@@ -80,6 +82,7 @@ class TestInfo:
 
         # Verify fan speed
         assert status.fan_speed.stage == 2
+        assert status.fan_speed.base_stage == 2
         assert status.fan_speed.stage_percent == 24.0
         assert status.fan_speed.rpm_supply == 1234
         assert status.fan_speed.rpm_extract == 1256
@@ -212,6 +215,23 @@ class TestInfo:
         # Args are (host, password, timeout)
         assert mock_client.call_args[0][0] == "test.local"
         assert mock_client.call_args[0][1] == "custom_pass"
+
+    @pytest.mark.asyncio
+    async def test_set_fan_stage_delegates_to_client(self, mock_client):
+        """Fan-stage requests are delegated unchanged to the client."""
+        async with Info("test.local") as info:
+            await info.set_fan_stage(2)
+
+        mock_client.return_value.set_fan_stage.assert_awaited_once_with(2)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("enabled", [True, False])
+    async def test_set_automatic_mode_delegates_to_client(self, mock_client, enabled):
+        """Automatic-mode requests are delegated unchanged to the client."""
+        async with Info("test.local") as info:
+            await info.set_automatic_mode(enabled)
+
+        mock_client.return_value.set_automatic_mode.assert_awaited_once_with(enabled)
 
     @pytest.mark.asyncio
     async def test_set_party_mode_with_defaults(self, mock_client):

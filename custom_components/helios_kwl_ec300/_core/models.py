@@ -63,6 +63,7 @@ class FanSpeed(BaseModel):
 
     Attributes:
         stage: Fan stage 1-4 (normal), 5-6 (external control), None if not available
+        base_stage: Raw v00102 base stage, independent of party display overrides
         stage_percent: Fan stage in percent (0-100), None if not available
         stage_label: Human-readable label for the fan stage
         rpm_supply: Supply fan RPM, None if not available
@@ -70,6 +71,9 @@ class FanSpeed(BaseModel):
     """
 
     stage: int | None = Field(None, ge=1, le=6, description="Fan stage 1-4, or 5-6 for external")
+    base_stage: int | None = Field(
+        None, ge=1, le=6, description="Raw v00102 stage without party display override"
+    )
     stage_percent: float | None = Field(None, ge=0, le=100, description="Fan stage percentage")
     stage_label: str
     rpm_supply: int | None = Field(None, ge=0, description="Supply fan RPM")

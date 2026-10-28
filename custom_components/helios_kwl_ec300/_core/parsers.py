@@ -226,6 +226,7 @@ def extract_fan_speed(data: dict[str, str]) -> FanSpeed:
     rpm_e_raw = data.get(FanID.RPM_EXTRACT, "-")
 
     stage = _try_int(stage_raw)
+    base_stage = _try_int(data.get(FanID.STAGE, "-"))
     stage_pct = _try_float(pct_raw)
     rpm_supply = _try_int(rpm_s_raw)
     rpm_extract = _try_int(rpm_e_raw)
@@ -237,6 +238,7 @@ def extract_fan_speed(data: dict[str, str]) -> FanSpeed:
 
     return FanSpeed(
         stage=stage,
+        base_stage=base_stage,
         stage_percent=stage_pct,
         stage_label=stage_label,
         rpm_supply=rpm_supply,

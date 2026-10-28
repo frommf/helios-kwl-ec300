@@ -9,6 +9,7 @@ from custom_components.helios_kwl_ec300._core.constants import (
     AUTH_ENDPOINT,
     DATA_ENDPOINT,
     IDENTITY_ENDPOINT,
+    OPERATING_CONTROL_ENDPOINT,
     PARTY_ENDPOINT,
     PARTY_STATE_ENDPOINT,
 )
@@ -310,6 +311,105 @@ class TestHeliosClient:
 
         with pytest.raises(ValueError, match="Unsupported XML endpoint"):
             await client.fetch_xml_data("/info.htm")
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("fan_stage", [1, 2, 3, 4])
+    async def test_set_fan_stage_exact_body(self, mock_transport, fan_stage):
+        """Fan-stage writes contain only manual mode and the selected stage."""
+        mock_transport.return_value.post.return_value = HTTPResponse(
+            status_code=200, headers={}, body=b""
+        )
+
+        client = HeliosClient("test.local")
+        await client.set_fan_stage(fan_stage)
+
+        mock_transport.return_value.post.assert_called_once_with(
+            OPERATING_CONTROL_ENDPOINT, f"v00101=1&v00102={fan_stage}"
+        )
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("enabled", "body"), [(True, "v00101=0"), (False, "v00101=1")])
+    async def test_set_automatic_mode_exact_body(self, mock_transport, enabled, body):
+        """Automatic-mode writes contain only the base-mode parameter."""
+        mock_transport.return_value.post.return_value = HTTPResponse(
+            status_code=200, headers={}, body=b""
+        )
+
+        client = HeliosClient("test.local")
+        await client.set_automatic_mode(enabled)
+
+        mock_transport.return_value.post.assert_called_once_with(OPERATING_CONTROL_ENDPOINT, body)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("fan_stage", [0, 5, 6, -1, True, False, 1.0, "2", None])
+    async def test_set_fan_stage_rejects_invalid_values_without_transport(
+        self, mock_transport, fan_stage
+    ):
+        """Invalid stages are rejected before any network communication."""
+        client = HeliosClient("test.local")
+
+        with pytest.raises(ValueError, match="integer from 1 to 4"):
+            await client.set_fan_stage(fan_stage)
+
+        mock_transport.return_value.post.assert_not_called()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("enabled", [1, 0, "on", None])
+    async def test_set_automatic_mode_rejects_non_boolean_without_transport(
+        self, mock_transport, enabled
+    ):
+        """Non-boolean mode values are rejected before network communication."""
+        client = HeliosClient("test.local")
+
+        with pytest.raises(ValueError, match="boolean"):
+            await client.set_automatic_mode(enabled)
+
+        mock_transport.return_value.post.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_set_fan_stage_auto_login_on_403(self, mock_transport):
+        """A fan-stage request is retried unchanged once after authentication."""
+        mock_transport.return_value.post.side_effect = [
+            HTTPResponse(status_code=403, headers={}, body=b""),
+            HTTPResponse(status_code=200, headers={}, body=b""),
+            HTTPResponse(status_code=200, headers={}, body=b""),
+        ]
+
+        client = HeliosClient("test.local")
+        await client.set_fan_stage(2)
+
+        calls = mock_transport.return_value.post.call_args_list
+        assert calls[0][0] == (OPERATING_CONTROL_ENDPOINT, "v00101=1&v00102=2")
+        assert calls[1][0] == (AUTH_ENDPOINT, "v00402=!helios!")
+        assert calls[2][0] == (OPERATING_CONTROL_ENDPOINT, "v00101=1&v00102=2")
+
+    @pytest.mark.asyncio
+    async def test_set_automatic_mode_403_after_login_fails(self, mock_transport):
+        """A second 403 after login raises an authentication error."""
+        mock_transport.return_value.post.side_effect = [
+            HTTPResponse(status_code=403, headers={}, body=b""),
+            HTTPResponse(status_code=200, headers={}, body=b""),
+            HTTPResponse(status_code=403, headers={}, body=b""),
+        ]
+
+        client = HeliosClient("test.local")
+
+        with pytest.raises(AuthenticationError, match="after login attempt"):
+            await client.set_automatic_mode(True)
+
+        assert mock_transport.return_value.post.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_set_automatic_mode_unexpected_status(self, mock_transport):
+        """Non-200 responses are reported as protocol errors."""
+        mock_transport.return_value.post.return_value = HTTPResponse(
+            status_code=500, headers={}, body=b"Internal Server Error"
+        )
+
+        client = HeliosClient("test.local")
+
+        with pytest.raises(ProtocolError, match="Unexpected status 500"):
+            await client.set_automatic_mode(False)
 
     @pytest.mark.asyncio
     async def test_set_party_mode_success(self, mock_transport):

@@ -189,6 +189,22 @@ class Info:
         """Validate connectivity and return a complete device snapshot."""
         return await self.get_snapshot()
 
+    async def set_fan_stage(self, fan_stage: int) -> None:
+        """Send a request for manual fan stage 1–4 via ``/info.htm``.
+
+        Setting a stage also requests manual mode. Completion means the request was
+        sent successfully; it does not verify when the hardware applies the change.
+        """
+        await self._client.set_fan_stage(fan_stage)
+
+    async def set_automatic_mode(self, enabled: bool) -> None:
+        """Send a request to enable or disable the base automatic mode.
+
+        Completion means the request was sent successfully; it does not verify when
+        the hardware applies the change.
+        """
+        await self._client.set_automatic_mode(enabled)
+
     async def set_party_mode(
         self,
         duration_minutes: int = 90,

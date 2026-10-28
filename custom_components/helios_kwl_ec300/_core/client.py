@@ -12,8 +12,11 @@ from .constants import (
     DATA_ENDPOINT,
     DEFAULT_PASSWORD,
     IDENTITY_ENDPOINT,
+    OPERATING_CONTROL_ENDPOINT,
     PARTY_ENDPOINT,
     PARTY_STATE_ENDPOINT,
+    FanID,
+    ModeID,
     PartyModeID,
 )
 from .exceptions import AuthenticationError, ProtocolError
@@ -152,6 +155,50 @@ class HeliosClient:
 
         # Parse XML response
         return parse_values_xml(response.body)
+
+    async def set_fan_stage(self, fan_stage: int, retry_auth: bool = True) -> None:
+        """Send a manual fan-stage request with the two permitted parameters.
+
+        A successful response confirms only that the request was sent, not when the
+        hardware has applied the requested stage.
+        """
+        if type(fan_stage) is not int or fan_stage not in (1, 2, 3, 4):
+            raise ValueError("Fan stage must be an integer from 1 to 4")
+
+        body = f"{ModeID.AUTO_OR_MANUAL}=1&{FanID.STAGE}={fan_stage}"
+        await self._post_operating_control(body, retry_auth=retry_auth)
+
+    async def set_automatic_mode(self, enabled: bool, retry_auth: bool = True) -> None:
+        """Send an automatic-mode request without any additional parameters.
+
+        A successful response confirms only that the request was sent, not when the
+        hardware has applied the requested mode.
+        """
+        if type(enabled) is not bool:
+            raise ValueError("Automatic mode must be enabled or disabled with a boolean")
+
+        value = 0 if enabled else 1
+        body = f"{ModeID.AUTO_OR_MANUAL}={value}"
+        await self._post_operating_control(body, retry_auth=retry_auth)
+
+    async def _post_operating_control(self, body: str, retry_auth: bool) -> None:
+        """Post a prevalidated operating-control body and retry once after login."""
+        response = await self.transport.post(OPERATING_CONTROL_ENDPOINT, body)
+
+        if response.status_code == 403:
+            if not retry_auth:
+                raise AuthenticationError(
+                    "Access forbidden (403) even after login attempt. "
+                    "Check password or device configuration."
+                )
+
+            await self.login()
+            return await self._post_operating_control(body, retry_auth=False)
+
+        if response.status_code != 200:
+            raise ProtocolError(
+                f"Unexpected status {response.status_code} for {OPERATING_CONTROL_ENDPOINT}"
+            )
 
     async def set_party_mode(
         self,

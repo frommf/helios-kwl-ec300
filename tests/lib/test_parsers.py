@@ -232,6 +232,7 @@ class TestExtractFanSpeed:
 
         assert isinstance(fan, FanSpeed)
         assert fan.stage == 2
+        assert fan.base_stage == 2
         assert fan.stage_percent == 24.0
         assert fan.rpm_supply == 1234
         assert fan.rpm_extract == 1256
@@ -255,6 +256,7 @@ class TestExtractFanSpeed:
         fan = extract_fan_speed(data)
 
         assert fan.stage is None
+        assert fan.base_stage is None
         assert fan.stage_percent is None
         assert fan.rpm_supply is None
         assert fan.rpm_extract is None
@@ -287,8 +289,9 @@ class TestExtractFanSpeed:
 
         fan = extract_fan_speed(data)
 
-        # Should display party target stage (3), not current actual stage (2)
+        # Display keeps the party target while the base stage remains unchanged.
         assert fan.stage == 3
+        assert fan.base_stage == 2
         assert "S3" in fan.stage_label
         assert "Nennlüftung" in fan.stage_label
 

@@ -16,6 +16,7 @@ MODULES = [
     "custom_components.helios_kwl_ec300.sensor",
     "custom_components.helios_kwl_ec300.number",
     "custom_components.helios_kwl_ec300.select",
+    "custom_components.helios_kwl_ec300.switch",
     "custom_components.helios_kwl_ec300.diagnostics",
 ]
 

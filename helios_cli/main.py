@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """CLI entry point for helios-kwl-ec300.
 
-Provides a command-line interface for reading status from Helios KWL EC 300W R
-ventilation units.
+Provides status monitoring and narrowly limited operating controls for Helios
+KWL EC 300W R ventilation units.
 """
 
 import argparse
@@ -113,6 +113,33 @@ async def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+async def cmd_fan_stage(args: argparse.Namespace) -> int:
+    """Send a manual fan-stage request without claiming hardware verification."""
+    print(f"Sending fan stage {args.fan_stage} request to {args.host} …", file=sys.stderr)
+
+    async with Info(args.host, password=args.password) as helios:
+        await helios.set_fan_stage(args.fan_stage)
+
+    print(
+        "✓ Fan stage request sent with manual mode",
+        file=sys.stderr,
+    )
+    return 0
+
+
+async def cmd_automatic(args: argparse.Namespace) -> int:
+    """Send an automatic-mode request without claiming hardware verification."""
+    enabled = args.automatic_state == "on"
+    state = "on" if enabled else "off"
+    print(f"Sending automatic mode '{state}' request to {args.host} …", file=sys.stderr)
+
+    async with Info(args.host, password=args.password) as helios:
+        await helios.set_automatic_mode(enabled)
+
+    print("✓ Automatic mode request sent", file=sys.stderr)
+    return 0
+
+
 async def cmd_party_start(args: argparse.Namespace) -> int:
     """Handle party mode start command.
 
@@ -174,6 +201,10 @@ async def async_main(args: argparse.Namespace) -> int:
         # Route to appropriate command handler
         if args.command == "status":
             return await cmd_status(args)
+        elif args.command == "fan-stage":
+            return await cmd_fan_stage(args)
+        elif args.command == "automatic":
+            return await cmd_automatic(args)
         elif args.command == "party":
             if args.party_action == "start":
                 return await cmd_party_start(args)
@@ -203,12 +234,14 @@ Examples:
   %(prog)s                                  # Show status (default)
   %(prog)s status --json                    # JSON output for scripting
   %(prog)s --password 'secret' status       # Authenticate with a custom password
+  %(prog)s fan-stage 2                      # Request manual fan stage 2
+  %(prog)s automatic on                     # Request automatic mode
   %(prog)s party start --duration 120       # Activate party mode for 120 min
   %(prog)s party stop                       # Deactivate party mode
 
 Safety:
-  This tool can activate/deactivate party mode only. All other operations
-  are read-only and never modify device state.
+  Device writes are limited to party mode, fan stages 1-4 with manual mode,
+  and automatic mode. Device configuration always remains read-only.
         """,
     )
     parser.add_argument(
@@ -241,6 +274,30 @@ Safety:
         "--json",
         action="store_true",
         help="Output results as JSON instead of human-readable text",
+    )
+
+    # Normal operating controls
+    fan_stage_parser = subparsers.add_parser(
+        "fan-stage",
+        help="Request manual fan stage 1-4",
+    )
+    fan_stage_parser.add_argument(
+        "fan_stage",
+        type=int,
+        choices=(1, 2, 3, 4),
+        metavar="STAGE",
+        help="Fan stage 1-4 (also requests manual mode)",
+    )
+
+    automatic_parser = subparsers.add_parser(
+        "automatic",
+        help="Request base automatic mode on or off",
+    )
+    automatic_parser.add_argument(
+        "automatic_state",
+        choices=("on", "off"),
+        metavar="STATE",
+        help="Use 'on' for automatic or 'off' for manual mode",
     )
 
     # Party mode subcommand

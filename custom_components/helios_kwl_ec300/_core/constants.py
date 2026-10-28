@@ -23,6 +23,7 @@ DATA_ENDPOINT: Final[str] = "/data/werte8.xml"
 IDENTITY_ENDPOINT: Final[str] = "/data/werte20.xml"
 PARTY_STATE_ENDPOINT: Final[str] = "/data/werte3.xml"
 AUTH_ENDPOINT: Final[str] = "/info.htm"
+OPERATING_CONTROL_ENDPOINT: Final[str] = "/info.htm"
 PARTY_ENDPOINT: Final[str] = "/party.htm"
 
 # ==============================================================================

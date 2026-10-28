@@ -58,6 +58,7 @@ def install_fake_homeassistant() -> None:
         NUMBER = "number"
         SELECT = "select"
         SENSOR = "sensor"
+        SWITCH = "switch"
 
     class EntityCategory(str, Enum):
         CONFIG = "config"
@@ -323,10 +324,18 @@ def install_fake_homeassistant() -> None:
     class SelectEntity:
         pass
 
+    class SwitchEntity:
+        pass
+
     select = ModuleType("homeassistant.components.select")
     select_any: Any = select
     select_any.SelectEntity = SelectEntity
     sys.modules["homeassistant.components.select"] = select
+
+    switch = ModuleType("homeassistant.components.switch")
+    switch_any: Any = switch
+    switch_any.SwitchEntity = SwitchEntity
+    sys.modules["homeassistant.components.switch"] = switch
 
     sensor = ModuleType("homeassistant.components.sensor")
     sensor_any: Any = sensor

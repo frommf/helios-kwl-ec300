@@ -6,7 +6,7 @@
 > - **When to Update:** Agents must update this document whenever they discover and **verify** a new variable ID, endpoint, or hardware quirk.
 > - **Style:** Keep updates technical, concise, and structured. Avoid boilerplate.
 
-**Critical Safety Requirement:** Read-only access with party mode control exception. Never send state-altering variables (`v00xxx=y`) except for session establishment and party mode control.
+**Critical Safety Requirement:** Device configuration is always read-only. Never send state-altering variables (`v00xxx=y`) except for session establishment, the explicitly allowed normal fan-stage/base-mode controls, and party mode control.
 
 ## 1. Protocol & Authentication
 - **Host:** `helios.fritz.box` (port 80)
@@ -51,14 +51,33 @@ The **Effective Mode** is determined by priority override:
 5. Else → **Automatic**
 
 ## 5. Forbidden Operations (Audit strictly)
-- Writing to `/ruhe.htm`, `/urlaub.htm`, or `/syst.htm`.
+- Writing to `/ruhe.htm`, `/urlaub.htm`, `/syst.htm`, or any device-configuration endpoint.
 - Sending variables that modify state is forbidden, **EXCEPT**:
   - `v00402` to `/info.htm` for login (always permitted)
-  - `v00091`, `v00092`, `v00094` to `/party.htm` for party mode control (explicitly allowed)
+  - `v00101` and `v00102` to `/info.htm` only in the exact operating-control bodies below
+  - `v00091`, `v00092`, `v00093=0`, and `v00094` to `/party.htm` for party mode control (explicitly allowed)
+- No hidden `info.htm` form fields, `v01306`, `v00103`, or other parameters may be added to operating-control requests.
 
-## 6. Party Mode Control (Explicitly Allowed)
+## 6. Normal Operating Control (Explicitly Allowed)
 
-Party mode is the **ONLY** write operation permitted beyond authentication.
+**Endpoint:** `/info.htm` (POST)
+
+| Operation | Exact body |
+|---|---|
+| Base automatic mode on | `v00101=0` |
+| Base automatic mode off / manual mode | `v00101=1` |
+| Normal fan stage 1–4 | `v00101=1&v00102=<stage>` |
+
+Selecting a normal fan stage always requests manual mode in the same body. Other stages, including external stages 5/6, are not writable. These requests change only current operating controls; every device-configuration page and parameter remains forbidden.
+
+A successful HTTP response confirms request submission, not when the hardware has applied the change. Home Assistant requests an immediate refresh and continues its configured polling interval (default 30 seconds); no fixed hardware-delay timer is assumed. Readback always comes from `v00101` and raw `v00102`, independently of party/effective-mode display overrides.
+
+### Authentication
+On HTTP 403, perform login via `/info.htm` and retry the identical operating-control body once.
+
+## 7. Party Mode Control (Explicitly Allowed)
+
+Party mode control is permitted in addition to authentication and the normal operating controls above.
 
 **Endpoint:** `/party.htm` (POST)
 
@@ -93,7 +112,7 @@ Like data endpoints, `/party.htm` requires prior authentication. If a 403 respon
 
 **Reference:** See `start_party.sh` for working implementation.
 
-## 7. Resources
+## 8. Resources
 
 ### Documentation
 - **[README.md](README.md)** — Main documentation: installation, usage examples, troubleshooting

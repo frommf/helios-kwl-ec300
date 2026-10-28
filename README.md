@@ -1,6 +1,6 @@
-# Helios KWL EC 300 — Status Monitor
+# Helios KWL EC 300 — Monitor & Limited Control
 
-Read-oriented monitoring tool for **Helios KWL EC 300W R** ventilation units running **easyControls v2.7**. Provides a Python library, CLI, and Home Assistant custom integration for reading live status data (temperatures, fan speeds, operation modes, party mode state) from the device's built-in web interface.
+Monitoring and limited operating-control tool for **Helios KWL EC 300W R** ventilation units running **easyControls v2.7**. Provides a Python library, CLI, and Home Assistant custom integration for live status data, normal fan-stage/automatic-mode control, and party mode control through the device's built-in web interface.
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
@@ -9,16 +9,18 @@ Read-oriented monitoring tool for **Helios KWL EC 300W R** ventilation units run
 > **Why HTTP and not Modbus?**
 > This device supports Modbus in theory, but in practice it causes the ventilation unit to crash after running for a while. The HTTP/1.0 web interface is the only reliable communication channel for easyControls v2.7 firmware.
 
-**Safety**: Monitoring is read-only. The only permitted state changes are party mode start/stop. All other device configuration is off-limits.
+**Safety**: Device configuration is always read-only. The only permitted state changes are normal fan stage 1–4 with manual mode, base automatic mode on/off, and party mode start/stop.
 
 ## Features
 
 - Temperature monitoring — all air streams (outdoor, supply, exhaust, extract)
 - Fan speed tracking — current stage, percentage, RPM for both fans
+- Normal fan-stage control — stages 1–4; selecting a stage also requests manual mode
+- Base automatic-mode control — on/off independently of effective-mode overrides
 - Operation mode status — automatic, manual, party, quiet, holiday
 - Safe party mode control — explicitly limited to start/stop
 - Async/await with full type annotations and Pydantic models
-- Home Assistant custom integration with coordinator, sensor, fan, number, and select entities
+- Home Assistant custom integration with coordinator, sensor, fan, number, select, and switch entities
 
 ## Compatibility
 
@@ -88,7 +90,10 @@ The component is self-contained. Provided entities:
 - **Sensors** — all temperatures, fan stage/percent/RPM, operation mode, party state
 - **Fan** — current speed as percentage for dashboards; turning it on/off starts/stops party mode
 - **Number** — default party duration (minutes)
-- **Select** — default party fan stage (1–4)
+- **Selects** — normal fan-stage control (1–4) and default party fan stage
+- **Switch** — base automatic mode, derived from `v00101` even during party/quiet/holiday overrides
+
+After an operating-control write, Home Assistant requests an immediate refresh and then continues normal polling (default: every 30 seconds). If the device still returns the previous value during its hardware transition, the displayed state remains the actual value read from the device until a later refresh reports the new one.
 
 ## CLI Usage
 
@@ -102,14 +107,23 @@ just run --host 192.168.1.100 --password 'my-secret' status
 # JSON output
 just run status --json
 
+# Normal operating controls (request submission, not hardware verification)
+just run fan-stage 2        # Also requests manual mode
+just run automatic on
+just run automatic off
+
 # Party mode
 just run party start --duration 120 --fan-stage 4
 just run party stop
 
 # Help
 just run --help
+just run fan-stage --help
+just run automatic --help
 just run party --help
 ```
+
+Successful control commands confirm that the request was sent, not that the hardware has already applied it. The CLI does not sleep or poll automatically; use `just run status` or `just run status --json` when an explicit readback is needed.
 
 ## Python Library
 
@@ -126,6 +140,10 @@ async def main():
         snapshot = await helios.get_snapshot()
         if snapshot.identity:
             print(snapshot.identity.unique_id)
+
+        # These calls send operating requests; they do not verify hardware timing.
+        await helios.set_fan_stage(2)          # Also requests manual mode
+        await helios.set_automatic_mode(True)  # Request base automatic mode
 
         await helios.set_party_mode(duration_minutes=120, fan_stage=4)
         await helios.stop_party_mode()
@@ -162,10 +180,13 @@ Only these write operations are permitted:
 | Endpoint | Body | Purpose |
 |----------|------|---------|
 | `/info.htm` | `v00402=!helios!` | Authentication |
-| `/party.htm` | `v00092=<stage>&v00091=<duration>&v00094=1` | Start party mode |
+| `/info.htm` | `v00101=0` | Request base automatic mode |
+| `/info.htm` | `v00101=1` | Request base manual mode (automatic off) |
+| `/info.htm` | `v00101=1&v00102=<stage>` | Request normal fan stage 1–4 with manual mode |
+| `/party.htm` | `v00092=<stage>&v00091=<duration>&v00093=0&v00094=1` | Start party mode |
 | `/party.htm` | `v00094=0` | Stop party mode |
 
-**Never** access `/ruhe.htm`, `/urlaub.htm`, `/syst.htm`, or any other state-changing endpoint.
+The operating-control requests contain only the listed parameters—no hidden form fields or state flags. **Never** write to `/ruhe.htm`, `/urlaub.htm`, `/syst.htm`, or any configuration/state-changing endpoint beyond the explicit table above.
 
 ## Development
 
@@ -208,6 +229,16 @@ just test -v -k "test_parsers"  # filtered
 ```
 
 HA tests use lightweight in-repo stubs for `homeassistant` and `voluptuous` — no local HA installation needed.
+
+### Opt-in live timing measurement
+
+`tests/live/` is excluded from normal pytest collection and CI. The operating-control timing test also skips before any device connection unless `HELIOS_LIVE_TEST=1` is set explicitly. Run it only as a final, user-started hardware verification after `just check` passes:
+
+```bash
+HELIOS_LIVE_TEST=1 uv run pytest -s tests/live/test_operating_control_timing.py
+```
+
+The test first requires effective automatic mode and base stage 1, otherwise it aborts without a measurement write. It then sends exactly one measurement request for manual stage 2, records read-only polls for up to 30 seconds, and restores stage 1 plus base automatic mode in a `finally` block with read verification. Its output shows first detection, elapsed seconds, poll counts, and stability to support a separate decision about any future delayed refresh.
 
 ## Troubleshooting
 

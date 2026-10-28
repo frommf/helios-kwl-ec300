@@ -47,6 +47,9 @@ ignore = [
 testpaths = ["tests/lib", "tests/ha"]
 asyncio_mode = "auto"
 addopts = "-v --tb=short"
+markers = [
+    "live: explicitly activated real-hardware tests (requires HELIOS_LIVE_TEST=1)",
+]
 
 [tool.mypy]
 python_version = "3.13"

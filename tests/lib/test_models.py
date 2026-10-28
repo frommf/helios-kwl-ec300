@@ -156,12 +156,14 @@ class TestFanSpeed:
         """Test creating valid fan speed reading."""
         fan = FanSpeed(
             stage=2,
+            base_stage=2,
             stage_percent=24.0,
             stage_label="S2 — Reduced ventilation",
             rpm_supply=1234,
             rpm_extract=1256,
         )
         assert fan.stage == 2
+        assert fan.base_stage == 2
         assert fan.stage_percent == 24.0
         assert fan.rpm_supply == 1234
         assert fan.rpm_extract == 1256
@@ -199,6 +201,19 @@ class TestFanSpeed:
         )
         assert fan.stage == 5
 
+    @pytest.mark.parametrize("base_stage", [0, 7])
+    def test_base_stage_validation(self, base_stage):
+        """Test the raw base stage uses the same valid range as the display stage."""
+        with pytest.raises(ValidationError):
+            FanSpeed(
+                stage=2,
+                base_stage=base_stage,
+                stage_percent=24.0,
+                stage_label="Invalid",
+                rpm_supply=0,
+                rpm_extract=0,
+            )
+
     def test_fan_speed_none_values(self):
         """Test fan speed with None values."""
         fan = FanSpeed(
@@ -209,6 +224,7 @@ class TestFanSpeed:
             rpm_extract=None,
         )
         assert fan.stage is None
+        assert fan.base_stage is None
         assert fan.rpm_supply is None
 
 

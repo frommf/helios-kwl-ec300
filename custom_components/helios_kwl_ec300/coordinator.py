@@ -32,6 +32,10 @@ class HeliosApi(Protocol):
 
     async def get_snapshot(self) -> HeliosSnapshot: ...
 
+    async def set_fan_stage(self, fan_stage: int) -> None: ...
+
+    async def set_automatic_mode(self, enabled: bool) -> None: ...
+
     async def set_party_mode(self, duration_minutes: int, fan_stage: int) -> None: ...
 
     async def stop_party_mode(self) -> None: ...
@@ -86,6 +90,16 @@ class HeliosDataUpdateCoordinator(DataUpdateCoordinator[HeliosSnapshot]):
             raise ConfigEntryAuthFailed from err
         except HeliosError as err:
             raise UpdateFailed(f"Error communicating with Helios device: {err}") from err
+
+    async def async_set_fan_stage(self, fan_stage: int) -> None:
+        """Send a fan-stage request and refresh actual device state immediately."""
+        await self.api.set_fan_stage(fan_stage)
+        await self.async_request_refresh()
+
+    async def async_set_automatic_mode(self, enabled: bool) -> None:
+        """Send an automatic-mode request and refresh actual device state immediately."""
+        await self.api.set_automatic_mode(enabled)
+        await self.async_request_refresh()
 
     async def async_start_party_mode(
         self,

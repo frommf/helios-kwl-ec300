@@ -1,30 +1,33 @@
 # AGENTS.md
 
-Read-only monitoring tool for Helios KWL EC 300W R ventilation units: an async Python library, a CLI, and a Home Assistant custom integration. Everything talks to the device's non-standard embedded HTTP server, so the protocol quirks below are the core of the project.
+Monitoring and limited operating-control tool for Helios KWL EC 300W R ventilation units: an async Python library, a CLI, and a Home Assistant custom integration. Everything talks to the device's non-standard embedded HTTP server, so the protocol quirks below are the core of the project.
 
-**SAFETY FIRST**: status monitoring is read-only. The only permitted writes are party mode start/stop and authentication. Every change must preserve this boundary.
+**SAFETY FIRST**: device configuration is always read-only. The only permitted writes are authentication, normal fan stage 1–4 with manual mode, base automatic mode on/off, and party mode start/stop. Every change must preserve this boundary.
 
 ## Safety Boundaries (non-negotiable)
 
 The only writable operations in the entire codebase:
 
 - **Login**: POST `v00402=!helios!` to `/info.htm` (IP-based session, no cookies)
+- **Base automatic mode**: POST only `v00101=0` (on) or `v00101=1` (off/manual) to `/info.htm`
+- **Normal fan stage**: POST only `v00101=1&v00102=<stage>` to `/info.htm` (stage 1-4; always requests manual mode in the same body)
 - **Start party mode**: POST to `/party.htm` with `v00092=<stage>&v00091=<duration>&v00093=0&v00094=1` (stage 1-4, duration 5-180 min)
 - **Stop party mode**: POST to `/party.htm` with `v00094=0`
 
 Everything else is read-only:
 
-- Never use POST/PUT/PATCH/DELETE that changes state beyond the two above. Status polling POSTs only data-retrieval bodies (`xml=/data/werte8.xml`) with no `v00xxx=` pairs.
-- Never touch `/ruhe.htm`, `/urlaub.htm`, `/syst.htm`, or any other state-changing endpoint.
-- Never set fan speeds/stages (outside party mode), quiet/holiday mode, temperature thresholds, schedules, or device config.
-- The HA fan entity writes only party mode start/stop — never fan stage/speed.
-- After writing code, audit the diff: grep for `v00xxx=` POST bodies — every hit must be one of the three allowed writes above.
+- Never use POST/PUT/PATCH/DELETE that changes state beyond the operations above. Status polling POSTs only data-retrieval bodies (`xml=/data/werte8.xml`) with no `v00xxx=` pairs.
+- Never write to `/ruhe.htm`, `/urlaub.htm`, `/syst.htm`, or any configuration/state-changing endpoint outside the explicit allowlist.
+- The `/info.htm` control bodies contain no hidden form fields, `v01306`, `v00103`, or other parameters. Never change quiet/holiday mode, temperature thresholds, schedules, fan configuration, or any other device config.
+- The HA fan entity writes only party mode start/stop. Only the dedicated fan-stage Select and automatic-mode Switch may write the normal operating controls above.
+- After writing code, audit the diff: grep for `v00xxx=` POST bodies — every hit must be one of the explicitly allowed writes above.
 
 ## Layout
 
 - `custom_components/helios_kwl_ec300/` — HA integration; deployed as the whole directory. `_core/` inside is the device library (async, Pydantic, pydantic-only runtime dep); import it from Python/HA as `from custom_components.helios_kwl_ec300._core import ...`.
 - `helios_cli/main.py` — CLI, installed as `helios` via `[project.scripts]`.
 - `tests/lib` (library unit tests) and `tests/ha` (HA tests). The root `tests/conftest.py` installs fake `homeassistant`/`voluptuous` modules (`tests/fake_ha.py`) for all tests — do **not** add a real HA dependency for routine work.
+- `tests/live` — explicitly activated real-hardware tests only; excluded from normal pytest collection and never run in CI. The operating-control timing test requires `HELIOS_LIVE_TEST=1` and may run only as a final, user-started verification.
 - `vendor/` — git-ignored manufacturer docs + web UI dump. NEVER modify, commit, or regenerate it; it may be missing on a fresh clone.
 - `custom_components/helios_kwl_ec300/brand/` — source brand art for a future `home-assistant/brands` PR; nothing reads it at runtime.
 - `SPECS.md` — authoritative protocol and variable reference.

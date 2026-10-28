@@ -89,6 +89,7 @@ def sample_snapshot() -> HeliosSnapshot:
             ),
             fan_speed=FanSpeed(
                 stage=2,
+                base_stage=2,
                 stage_percent=24.0,
                 stage_label="S2 - Reduced ventilation",
                 rpm_supply=1234,
