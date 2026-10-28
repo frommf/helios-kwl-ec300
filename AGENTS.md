@@ -57,7 +57,7 @@ Iterate with the focused recipes: `just test-ha` while touching the integration,
 
 ## HA / Release Constraints
 
-- `manifest.json` `version` must always match the current git tag (currently `0.3.0`); `hacs.json` and `manifest.json` must stay valid (HACS/hassfest enforce this in CI, domain must equal directory name).
+- `manifest.json` `version` must always match the current git tag (currently `0.4.0`); `hacs.json` and `manifest.json` must stay valid (HACS/hassfest enforce this in CI, domain must equal directory name).
 - The HA fan entity shows percentage for dashboard visibility; its only writes are party mode start/stop — no methods that set stages or percentages on the device.
 
 ## Key Variable IDs (used by monitors and parsers)
