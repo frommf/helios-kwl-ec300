@@ -41,7 +41,7 @@ dmypy.json
 
 # Vendor reference material — local-only, never commit, never modify.
 # Contains manufacturer documentation and the device web interface dump.
-# These files must NEVER appear in the repository. See AGENTS.md (Safety Mandates).
+# These files must NEVER appear in the repository. See AGENTS.md (Safety Boundaries).
 /vendor/
 # Legacy root locations, guarded so the material can never be re-committed there:
 /helios_web_dump/
