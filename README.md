@@ -57,9 +57,11 @@ helios-cli/
 │   └── translations/
 ├── helios_cli/                           # CLI (local only)
 │   └── main.py
-└── tests/
-    ├── lib/   # Library unit tests
-    └── ha/    # HA integration tests (stub-based, no HA install needed)
+├── tests/
+│   ├── lib/   # Library unit tests
+│   ├── ha/    # HA integration tests (stub-based, no HA install needed)
+│   └── live/  # Explicitly activated real-hardware tests
+└── openspec/specs/                       # Product behavior and acceptance scenarios
 ```
 
 ## Home Assistant Integration
@@ -175,18 +177,9 @@ Parse XML → typed Pydantic models
 
 ## Safety Boundaries
 
-Only these write operations are permitted:
+Authentication and the operating/party controls documented above are the only permitted writes. Every device-configuration page and parameter remains read-only. Requests must use the exact allowlisted bodies—never hidden form fields, state flags, or additional parameters.
 
-| Endpoint | Body | Purpose |
-|----------|------|---------|
-| `/info.htm` | `v00402=!helios!` | Authentication |
-| `/info.htm` | `v00101=0` | Request base automatic mode |
-| `/info.htm` | `v00101=1` | Request base manual mode (automatic off) |
-| `/info.htm` | `v00101=1&v00102=<stage>` | Request normal fan stage 1–4 with manual mode |
-| `/party.htm` | `v00092=<stage>&v00091=<duration>&v00093=0&v00094=1` | Start party mode |
-| `/party.htm` | `v00094=0` | Stop party mode |
-
-The operating-control requests contain only the listed parameters—no hidden form fields or state flags. **Never** write to `/ruhe.htm`, `/urlaub.htm`, `/syst.htm`, or any configuration/state-changing endpoint beyond the explicit table above.
+The authoritative references are [`device-protocol`](openspec/specs/device-protocol/spec.md) for wire protocol, authentication, and variable IDs, [`party-mode-control`](openspec/specs/party-mode-control/spec.md) for party behavior and exact request bodies, and [`ventilation-control`](openspec/specs/ventilation-control/spec.md) for normal-control behavior and acceptance scenarios.
 
 ## Development
 
@@ -238,7 +231,7 @@ HA tests use lightweight in-repo stubs for `homeassistant` and `voluptuous` — 
 HELIOS_LIVE_TEST=1 uv run pytest -s tests/live/test_operating_control_timing.py
 ```
 
-The test first requires effective automatic mode and base stage 1, otherwise it aborts without a measurement write. It then sends exactly one measurement request for manual stage 2, records read-only polls for up to 30 seconds, and restores stage 1 plus base automatic mode in a `finally` block with read verification. Its output shows first detection, elapsed seconds, poll counts, and stability to support a separate decision about any future delayed refresh.
+The test requires effective automatic mode and base stage 1, otherwise it aborts without a measurement write. It performs one measurement request, records read-only polls, and restores the initial state in a `finally` block with read verification. The recorded timing and restoration results are archived in [`live-test-results.md`](openspec/changes/archive/2026-10-28-add-info-operating-controls/live-test-results.md).
 
 ## Troubleshooting
 
